@@ -1,0 +1,253 @@
+================================================================================
+OPIS TESTOV - OpsiMate Projekt
+================================================================================
+
+Tento dokument popisuje všetky testy vytvorené pre client a server stranu projektu.
+Každý test obsahuje popis, čo pokrýva a dôvod, prečo bol vytvorený.
+
+================================================================================
+SERVER TESTS (apps/server/tests/server-tests.test.ts)
+================================================================================
+
+Počet testov: 4
+Test doubles: MOCKS (testy 3 a 4)
+
+--------------------------------------------------------------------------------
+TEST 1: passwordResetTemplate should generate email template with reset URL
+--------------------------------------------------------------------------------
+Typ: Unit test (bez mocks)
+Funkcia testovaná: passwordResetTemplate() z apps/server/src/utils/mailTemplate.ts
+
+Popis testu:
+- Testuje generovanie emailového templatu pre reset hesla
+- Overuje, že template obsahuje všetky požadované prvky:
+  * Nadpis "Reset Your Password"
+  * Reset URL
+  * Meno používateľa
+  * Pozdrav "Hi [userName],"
+  * Tlačidlo "Reset Password"
+  * Informáciu o 15-minútovom expiračnom čase
+  * Branding "OpsiMate"
+
+Čo test pokrýva:
+- Správne formátovanie emailového templatu
+- Inklúziu všetkých potrebných informácií v template
+- Podporu pre voliteľný parameter userName
+
+Prečo sme tento test vytvorili:
+- Emailové templaty sú dôležitou súčasťou používateľskej skúsenosti
+- Zlepšuje pokrytie kódu (mailTemplate.ts mal nízke pokrytie)
+- Jednoduchý unit test, ktorý nevyžaduje zložité závislosti
+- Overuje, že template správne funguje s parametrami
+
+--------------------------------------------------------------------------------
+TEST 2: passwordResetTemplate should work without userName
+--------------------------------------------------------------------------------
+Typ: Unit test (bez mocks)
+Funkcia testovaná: passwordResetTemplate() z apps/server/src/utils/mailTemplate.ts
+
+Popis testu:
+- Testuje generovanie emailového templatu bez poskytnutia userName
+- Overuje, že template používa generický pozdrav "Hello," namiesto "Hi [userName],"
+- Kontroluje, že všetky ostatné prvky zostávajú správne
+
+Čo test pokrýva:
+- Správne spracovanie voliteľného parametra userName
+- Fallback na generický pozdrav keď userName nie je poskytnutý
+- Zachovanie funkcionality aj bez voliteľných parametrov
+
+Prečo sme tento test vytvorili:
+- Pokrýva edge case - chýbajúci voliteľný parameter
+- Zvyšuje pokrytie kódu pre rôzne scenáre použitia
+- Overuje robustnosť funkcie pri rôznych vstupoch
+- Jednoduchý test, ktorý zlepšuje celkové pokrytie
+
+--------------------------------------------------------------------------------
+TEST 3: ServicesBL.createService should create service using mocked repository
+--------------------------------------------------------------------------------
+Typ: Unit test s MOCK (test doubles)
+Funkcia testovaná: ServicesBL.createService() z apps/server/src/bl/services/services.bl.ts
+
+Popis testu:
+- Testuje vytvorenie nového service cez ServicesBL
+- Používa MOCK pre ServiceRepository a AuditBL (test doubles)
+- Overuje, že:
+  * Service je vytvorený cez repository
+  * Vytvorený service je správne načítaný podľa ID
+  * Audit log je správne zaznamenaný
+  * Všetky parametre sú správne predávané
+
+Čo test pokrýva:
+- Business logiku vytvárania service
+- Interakciu s repository vrstvou (cez mock)
+- Audit logging funkcionalitu
+- Správne spracovanie dát a návratových hodnôt
+
+Prečo sme tento test vytvorili:
+- ServicesBL mal nízke pokrytie (18.18% podľa coverage reportu)
+- Vytváranie service je kritická funkcionalita
+- Používa test doubles (MOCKS) - jedna z požadovaných techník
+- Testuje business logiku bez závislosti na databáze
+- Overuje správnu integráciu medzi BL a repository vrstvami
+
+--------------------------------------------------------------------------------
+TEST 4: ServicesBL.deleteService should delete service using mocked repository
+--------------------------------------------------------------------------------
+Typ: Unit test s MOCK (test doubles)
+Funkcia testovaná: ServicesBL.deleteService() z apps/server/src/bl/services/services.bl.ts
+
+Popis testu:
+- Testuje mazanie service cez ServicesBL
+- Používa MOCK pre ServiceRepository a AuditBL (test doubles)
+- Overuje, že:
+  * Service existuje pred zmazaním (validácia)
+  * Service je zmazaný cez repository
+  * Audit log je správne zaznamenaný
+  * Všetky parametre sú správne predávané
+
+Čo test pokrýva:
+- Business logiku mazania service
+- Validáciu existencie service pred zmazaním
+- Interakciu s repository vrstvou (cez mock)
+- Audit logging funkcionalitu pri mazaní
+
+Prečo sme tento test vytvorili:
+- Mazanie service je kritická operácia
+- Pokrýva ďalšiu časť ServicesBL s nízkym pokrytím
+- Používa test doubles (MOCKS) - jedna z požadovaných techník
+- Testuje error handling a validáciu pred vykonaním operácie
+- Overuje kompletný workflow mazania service
+
+================================================================================
+CLIENT TESTS (apps/client/src/lib/client-tests.test.ts)
+================================================================================
+
+Počet testov: 4
+Test doubles: MOCK (test 3)
+
+--------------------------------------------------------------------------------
+TEST 1: mapValidationErrors should map validation error details to field errors
+--------------------------------------------------------------------------------
+Typ: Unit test (bez mocks)
+Funkcia testovaná: mapValidationErrors() z apps/client/src/lib/errorMapper.ts
+
+Popis testu:
+- Testuje mapovanie validačných chýb zo servera na používateľsky priateľské správy
+- Overuje správne spracovanie error response s details
+- Kontroluje, že každé pole má správnu error správu
+- Testuje mapovanie pre rôzne typy chýb (invalid_string, too_small)
+
+Čo test pokrýva:
+- Transformáciu server error response na field errors
+- Správne mapovanie error kódov na user-friendly správy
+- Spracovanie viacerých validation errors naraz
+- Správne priradenie chýb ku konkrétnym poliam
+
+Prečo sme tento test vytvorili:
+- errorMapper.ts mal 0% pokrytie (podľa coverage reportu)
+- Error handling je kritická časť používateľskej skúsenosti
+- Pomáha používateľom pochopiť, čo je nesprávne vo formulároch
+- Jednoduchý unit test bez závislostí
+- Zlepšuje UX aplikácie správnym zobrazovaním chýb
+
+--------------------------------------------------------------------------------
+TEST 2: mapApiError should map HTTP 401 error to user-friendly message
+--------------------------------------------------------------------------------
+Typ: Unit test (bez mocks)
+Funkcia testovaná: mapApiError() z apps/client/src/lib/errorMapper.ts
+
+Popis testu:
+- Testuje mapovanie HTTP 401 (Unauthorized) chyby
+- Overuje, že sa zobrazí správna user-friendly správa
+- Kontroluje transformáciu technickej HTTP chyby na zrozumiteľnú správu
+
+Čo test pokrýva:
+- Mapovanie HTTP status kódov na user-friendly správy
+- Spracovanie autentifikačných chýb
+- Transformáciu technických error správ
+
+Prečo sme tento test vytvorili:
+- Pokrýva ďalšiu časť errorMapper.ts s 0% pokrytím
+- HTTP 401 je bežná chyba, ktorú používatelia vidia
+- Dôležité pre UX - používatelia potrebujú jasné správy
+- Jednoduchý unit test, ktorý zvyšuje pokrytie
+- Overuje správne mapovanie jednej z najčastejších chýb
+
+--------------------------------------------------------------------------------
+TEST 3: hasPermission should check permissions using mocked auth
+--------------------------------------------------------------------------------
+Typ: Unit test s MOCK (test doubles)
+Funkcia testovaná: hasPermission() z apps/client/src/lib/permissions.ts
+
+Popis testu:
+- Testuje kontrolu oprávnení používateľa
+- Používa MOCK pre auth.getUserRole() (test doubles)
+- Overuje, že admin má všetky oprávnenia (create, edit, delete, view)
+- Kontroluje, že mock je správne volaný
+
+Čo test pokrýva:
+- Permission checking logiku
+- Role-based access control (RBAC)
+- Správne oprávnenia pre admin rolu
+- Integráciu s auth modulom (cez mock)
+
+Prečo sme tento test vytvorili:
+- permissions.ts mal 35.22% pokrytie (podľa coverage reportu)
+- Permission checking je kritická bezpečnostná funkcionalita
+- Používa test doubles (MOCK) - jedna z požadovaných techník
+- Overuje správne fungovanie RBAC systému
+- Testuje bezpečnostnú logiku bez závislosti na localStorage/JWT
+
+--------------------------------------------------------------------------------
+TEST 4: removeDuplicates should remove duplicate objects from array
+--------------------------------------------------------------------------------
+Typ: Unit test (bez mocks)
+Funkcia testovaná: removeDuplicates() z apps/client/src/lib/utils.ts
+
+Popis testu:
+- Testuje odstránenie duplikátov objektov z poľa na základe kľúča
+- Overuje, že duplikáty sú správne odstránené
+- Kontroluje, že výsledné pole obsahuje len unikátne objekty
+- Overuje správnu dĺžku výsledného poľa
+
+Čo test pokrýva:
+- Utility funkciu pre prácu s poliami
+- Odstránenie duplikátov na základe property
+- Zachovanie prvého výskytu duplikátu
+- Správne spracovanie objektov v poli
+
+Prečo sme tento test vytvorili:
+- utils.ts je dôležitá utility súbor
+- removeDuplicates je užitočná funkcia pre prácu s dátami
+- Jednoduchý unit test bez závislostí
+- Overuje správne fungovanie utility funkcie
+- Zvyšuje pokrytie utility modulov
+
+================================================================================
+ZHRNUTIE
+================================================================================
+
+Celkový počet testov: 8
+  - Server: 4 testy
+  - Client: 4 testy
+
+Test doubles použitie:
+  - MOCKS: 3 testy (server testy 3, 4; client test 3)
+  - Bez mocks: 5 testov (jednoduché unit testy)
+
+Pokrytie kódu:
+  - Server: Testuje ServicesBL (malo pokrytie) a mailTemplate
+  - Client: Testuje errorMapper (0% pokrytie), permissions (35% pokrytie), utils
+
+Dôvody vytvorenia:
+  1. Zvýšenie test coverage podľa coverage reportov
+  2. Pokrytie kritických funkcionalít (permissions, error handling, service management)
+  3. Použitie test doubles (MOCKS) podľa požiadavky
+  4. Jednoduché unit testy pre utility funkcie
+  5. Testovanie business logiky bez závislostí na databáze/externých službách
+
+================================================================================
+KONIEC DOKUMENTU
+================================================================================
+
+
